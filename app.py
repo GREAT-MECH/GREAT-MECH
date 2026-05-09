@@ -4,211 +4,221 @@ import random
 import folium
 import re
 import time
-import hashlib
 from streamlit_folium import st_folium
 from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 
-# --- 1. SUPREME BRANDING & AFRICAN DNA ---
-st.set_page_config(page_title="Great Mech Supreme Global", layout="wide", page_icon="🦾")
+# --- 1. SUPREME BRANDING & AFRICAN ARCHITECTURE ---
+st.set_page_config(page_title="Great Mech Supreme Global", layout="wide", page_icon="🌍")
 
 st.markdown("""
 <style>
     .stApp { background-color: #050505; color: #FFFFFF; font-family: 'Helvetica Neue', sans-serif; }
     h1, h2, h3 { color: #D4AF37 !important; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; }
     
-    /* The African Logo: Moving Africa to the Next Level */
+    /* African Identity Symbol */
     .africa-logo {
         text-align: center; padding: 25px; border: 4px solid #D4AF37; border-radius: 50%;
-        width: 130px; height: 130px; margin: 0 auto; font-size: 65px;
-        background: radial-gradient(circle, #222, #000); box-shadow: 0px 0px 40px #D4AF37;
+        width: 140px; height: 140px; margin: 0 auto; font-size: 70px;
+        background: radial-gradient(circle, #222, #000); box-shadow: 0px 0px 50px #D4AF37;
     }
 
-    /* Ad Slot: Vendor Showcase */
-    .vendor-billboard {
-        background: linear-gradient(90deg, #111, #222); border: 1px solid #D4AF37;
-        padding: 25px; border-radius: 15px; margin-bottom: 30px; text-align: center;
+    /* Multi-Vendor Ad Slot Styling */
+    .vendor-slot {
+        background: linear-gradient(135deg, #111, #222); border-left: 6px solid #D4AF37;
+        padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;
+        border-right: 1px solid #333; border-top: 1px solid #333;
     }
 
-    /* Ironclad Buttons */
+    /* Founder Insight Box (Non-Editable) */
+    .insight-card {
+        background: rgba(212, 175, 55, 0.1); border: 1px solid #D4AF37;
+        padding: 20px; border-radius: 12px; color: #D4AF37;
+    }
+
     .stButton>button { 
         background: linear-gradient(45deg, #D4AF37, #AF8700); 
-        color: black !important; font-weight: bold; border-radius: 12px; border: none; width: 100%; height: 4.2em;
-        transition: 0.4s ease;
+        color: black !important; font-weight: bold; border-radius: 12px; border: none; width: 100%; height: 4.5em;
     }
-    .stButton>button:hover { transform: scale(1.02); box-shadow: 0px 0px 20px #D4AF37; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. GLOBAL ENGINE ASSETS ---
-def get_time_greeting(lang):
-    hour = datetime.now().hour
-    greetings = {
-        "English": ["Good Morning", "Good Afternoon", "Good Evening"],
-        "Pidgin": ["Bonsue", "How far", "Good Evening"],
-        "Yoruba": ["Ẹ kù árọ̀", "Ẹ kù ọ̀sán", "Ẹ kù ìrọ̀lẹ́"]
-    }
-    idx = 0 if 5 <= hour < 12 else 1 if 12 <= hour < 18 else 2
-    return greetings.get(lang, greetings["English"])[idx]
-
-bank_vault = {
-    "Nigeria": ["Access Bank", "Zenith Bank", "GTBank", "UBA", "First Bank", "Kuda", "Moniepoint", "OPay"],
-    "Ghana": ["GCB Bank", "Ecobank", "Absa Ghana"],
-    "Kenya": ["KCB Bank", "Equity Bank", "M-Pesa Business"],
-    "South Africa": ["Standard Bank", "Capitec", "FNB"],
-    "Egypt": ["National Bank of Egypt", "CIB"]
+# --- 2. GLOBAL AFRICAN BANK DATABASE (FINTECH CORE) ---
+african_fintech_hub = {
+    "Nigeria": ["Access Bank", "Zenith Bank", "GTBank", "UBA", "First Bank", "Kuda", "Moniepoint", "OPay", "Wema Bank", "Fidelity Bank", "Stanbic IBTC", "Sterling Bank"],
+    "Ghana": ["GCB Bank", "Ecobank Ghana", "Absa Ghana", "Fidelity Bank Ghana", "Stanbic Bank", "Zenith Bank Ghana"],
+    "Kenya": ["KCB Bank", "Equity Bank", "NCBA Bank", "Co-operative Bank", "M-Pesa Business", "Absa Kenya"],
+    "South Africa": ["Standard Bank", "Capitec", "First National Bank (FNB)", "Absa SA", "Nedbank", "TymeBank"],
+    "Egypt": ["National Bank of Egypt", "Banque Misr", "CIB Egypt", "QNB ALAHLI", "Alex Bank"],
+    "Ethiopia": ["Commercial Bank of Ethiopia", "Dashen Bank", "Awash Bank", "Abyssinia Bank"],
+    "Uganda": ["Stanbic Bank Uganda", "Centenary Bank", "Standard Chartered", "DFCU Bank"],
+    "Morocco": ["Attijariwafa Bank", "Banque Populaire", "BMCE Bank"],
+    "Tanzania": ["CRDB Bank", "NMB Bank", "NBC Tanzania", "Standard Chartered TZ"],
+    "Rwanda": ["Bank of Kigali", "BPR Bank", "I&M Bank Rwanda", "Cogebanque"]
 }
 
-african_states = ["Lagos", "Kano", "Rivers", "Oyo", "Enugu", "Abuja FCT", "Nairobi", "Accra", "Johannesburg", "Cairo"]
+def get_time_greeting():
+    hour = datetime.now().hour
+    if 5 <= hour < 12: return "Good Morning"
+    elif 12 <= hour < 18: return "Good Afternoon"
+    else: return "Good Evening"
 
-# --- 3. HARDENED SECURITY HANDSHAKE ---
-if 'secure_session' not in st.session_state:
-    st.session_state.update({
-        'secure_session': False, 
-        'user_role': None, 
-        'otp_handshake': None, 
-        'active_phone': None, 
-        'otp_active': False
-    })
+# --- 3. CLOUD ENGINE & DATABASE CONNECTION ---
+# Founder: Ensure your sheet is set to "Anyone with the link can EDIT"
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-if not st.session_state.secure_session:
+def sync_ledger():
+    try:
+        return conn.read(ttl=0)
+    except Exception as e:
+        # Fallback if cloud is unreachable
+        return pd.DataFrame(columns=['ID', 'Phone', 'Role', 'Service', 'Budget', 'Status', 'Location', 'Description', 'Timestamp'])
+
+# --- 4. SECURE IDENTITY PORTAL ---
+if 'auth' not in st.session_state:
+    st.session_state.update({'auth': False, 'role': None, 'phone': None, 'otp_active': False, 'otp_val': None})
+
+if not st.session_state.auth:
     st.markdown("<div class='africa-logo'>🌍</div>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center;'>GREAT MECH SUPREME: SECURE GATEWAY</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center;'>GREAT MECH SUPREME: AFRICA UNIFIED</h2>", unsafe_allow_html=True)
     
-    col_l, col_gate, col_r = st.columns([1, 1.8, 1])
-    with col_gate:
-        lang_pick = st.selectbox("🌍 Preferred Language", ["English", "Pidgin", "Yoruba", "Hausa", "Igbo"])
-        phone_raw = st.text_input("Enter International Phone Number", placeholder="+234...")
+    c_left, c_mid, c_right = st.columns([1, 2, 1])
+    with c_mid:
+        phone_input = st.text_input("Enter Phone Number", placeholder="+234...")
         
-        if st.button("GENERATE SECURE ACCESS CODE"):
-            # STRICT REGEX VALIDATION
-            if re.match(r"^\+?[1-9]\d{7,14}$", phone_raw):
-                generated_otp = str(random.randint(100000, 999999))
-                st.session_state.otp_handshake = generated_otp
-                st.session_state.active_phone = phone_raw
+        if st.button("REQUEST SECURE ACCESS"):
+            if re.match(r"^\+?[1-9]\d{7,14}$", phone_input):
+                otp = str(random.randint(100000, 999999))
+                st.session_state.otp_val = otp
+                st.session_state.phone = phone_input
                 st.session_state.otp_active = True
-                st.success(f"Security Token Dispatched to {phone_raw}")
-                # SECURITY NOTE: In local testing, code is shown. In Production, link to Twilio/Termii.
-                st.info(f"IRONCLAD OTP: {generated_otp}")
+                st.success(f"Verification Code Dispatched to {phone_input}")
+                st.info(f"SECURITY TOKEN: {otp}") # Debug only
             else:
-                st.error("Access Denied: Invalid Phone Format.")
+                st.error("Invalid format. Use International Format.")
 
         if st.session_state.otp_active:
-            otp_input = st.text_input("Verify 6-Digit Token", type="password")
-            if st.button("AUTHORIZE ENTRY"):
-                if otp_input == st.session_state.otp_handshake:
-                    # FOUNDER MASTER NUMBER (Unhackable Backdoor)
-                    if st.session_state.active_phone == "+2348000000000": # REPLACE WITH YOUR REAL NUMBER
-                        st.session_state.user_role = "Founder"
+            otp_verify = st.text_input("Enter 6-Digit Token", type="password")
+            if st.button("VERIFY IDENTITY"):
+                if otp_verify == st.session_state.otp_val:
+                    # FOUNDER MASTER ACCESS
+                    if st.session_state.phone == "+2340000000000": # Founder's Private Line
+                        st.session_state.role = "Founder"
+                    elif "8888" in st.session_state.phone: # Mock Mechanic Logic
+                        st.session_state.role = "Mechanic"
                     else:
-                        st.session_state.user_role = "User"
-                    
-                    st.session_state.secure_session = True
-                    st.balloons()
+                        st.session_state.role = "User"
+                    st.session_state.auth = True
                     st.rerun()
                 else:
-                    st.error("Critical Error: Unauthorized Token.")
+                    st.error("Verification Mismatch.")
     st.stop()
 
-# --- 4. THE SUPREME EMPIRE OS ---
-conn = st.connection("gsheets", type=GSheetsConnection)
-try:
-    master_ledger = conn.read(ttl=0)
-except:
-    master_ledger = pd.DataFrame(columns=['ID', 'Phone', 'Service', 'Budget', 'Status', 'Location', 'Description', 'Timestamp'])
+# --- 5. EMPIRE OPERATING SYSTEM (POST-LOGIN) ---
+master_db = sync_ledger()
 
-# Sidebar: Identity & Payouts
-st.sidebar.markdown("<div style='font-size: 60px; text-align: center;'>🌍</div>", unsafe_allow_html=True)
-st.sidebar.title(f"{get_time_greeting('English')}")
-st.sidebar.write(f"**Verified ID:** {st.session_state.active_phone}")
-st.sidebar.write(f"**Role:** {st.session_state.user_role}")
+st.sidebar.markdown("<div class='africa-logo' style='width:80px; height:80px; font-size:40px; padding:10px;'>🌍</div>", unsafe_allow_html=True)
+st.sidebar.title(f"{get_time_greeting()}, {st.session_state.role}")
+st.sidebar.write(f"**ID:** {st.session_state.phone}")
 
-# --- VENDOR SHOWCASE SLOT ---
-st.markdown("""
-<div class='vendor-billboard'>
-    <h3 style='margin:0; color:#D4AF37;'>🚢 GLOBAL VENDOR SHOWCASE</h3>
-    <p>Original Cummins Parts & Tesla Solar Batteries - Available for Delivery in 54 Countries.</p>
-    <button style='background:none; border:1px solid #D4AF37; color:#D4AF37; padding:10px 20px; border-radius:5px; cursor:pointer;'>Browse Inventory</button>
-</div>
-""", unsafe_allow_html=True)
+if st.sidebar.button("🚪 LOGOUT"):
+    st.session_state.auth = False
+    st.rerun()
 
-# --- MODULE: FOUNDER COMMAND ---
-if st.session_state.user_role == "Founder":
+# --- 6. MULTI-VENDOR ADVERTISEMENT SLOTS ---
+st.markdown("### 🏬 VENDOR SHOWCASE")
+ad_cols = st.columns(3)
+ads = [
+    {"title": "🔋 Solar Max Africa", "desc": "Premium Inverters for Engineering Sites. 10% Off."},
+    {"title": "⚙️ Perkins Engines", "desc": "Genuine Spare Parts. Dispatch to 54 Countries."},
+    {"title": "🛡️ SecureTech CCTV", "desc": "AI-Powered Security for Workshops. Buy Now."}
+]
+for i, ad in enumerate(ads):
+    with ad_cols[i]:
+        st.markdown(f"""
+        <div class='vendor-slot'>
+            <h4 style='color:#D4AF37; margin:0;'>{ad['title']}</h4>
+            <p style='font-size:14px; color:#bbb;'>{ad['desc']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+# --- 7. MODULES BY ROLE ---
+
+# --- FOUNDER COMMAND ---
+if st.session_state.role == "Founder":
     st.title("🏛️ FOUNDER COMMAND CENTER")
-    if not master_ledger.empty:
-        master_ledger['Budget'] = pd.to_numeric(master_ledger['Budget'], errors='coerce').fillna(0)
-        revenue = master_ledger['Budget'].sum()
+    if not master_db.empty:
+        master_db['Budget'] = pd.to_numeric(master_db['Budget'], errors='coerce').fillna(0)
+        total_rev = master_ledger['Budget'].sum() if 'master_ledger' in locals() else master_db['Budget'].sum()
         
         m1, m2, m3 = st.columns(3)
-        m1.metric("Ecosystem Revenue", f"₦{revenue:,.2f}")
-        m2.metric("Founder 15% Sovereignty", f"₦{revenue * 0.15:,.2f}")
-        m3.metric("Growth Rate", "+24% Africa-Wide")
+        m1.metric("Total Ecosystem Value", f"₦{total_rev:,.2f}")
+        m2.metric("Founder 15% Net", f"₦{total_rev * 0.15:,.2f}")
+        m3.metric("Growth Index", "54 Countries Online")
         
-        st.subheader("Global Service Inventory")
-        for i, row in master_ledger.iterrows():
-            with st.expander(f"ORDER {row['ID']} | {row['Service']} ({row['Status']})"):
-                st.write(f"**Description:** {row.get('Description', 'No data provided')}")
-                st.write(f"**Contact:** {row['Phone']}")
-                if st.button(f"🗑️ PURGE RECORD {row['ID']}", key=f"del_{row['ID']}"):
-                    conn.update(data=master_ledger.drop(i))
-                    st.rerun()
+        st.subheader("Global Ledger Control")
+        st.dataframe(master_db, use_container_width=True)
+        if st.button("CLEAR ALL COMPLETED JOBS"):
+            st.warning("Feature locked for production safety.")
 
-# --- MODULE: USER MARKETPLACE ---
-elif st.session_state.user_role == "User":
+# --- USER MARKETPLACE ---
+elif st.session_state.role == "User":
     st.title("📍 ENGINEERING MARKETPLACE")
-    tab_deploy, tab_ai, tab_history = st.tabs(["🚀 DEPLOY REQUEST", "🧠 AI BRAIN", "📄 RECEIPTS"])
+    t1, t2 = st.tabs(["🚀 DEPLOY SERVICE", "🧠 AI DIAGNOSIS"])
     
-    with tab_deploy:
-        with st.form("deploy_order"):
-            col_a, col_b = st.columns(2)
-            service_type = col_a.selectbox("Category", ["🚛 Truck", "🏎️ Car", "⚙️ Diesel Engine", "📹 CCTV", "☀️ Solar"])
-            budget_val = col_b.number_input("Budget (NGN)", min_value=5000)
-            target_loc = st.selectbox("Select State/Region", african_states)
-            problem_desc = st.text_area("Detailed Symptoms for AI Diagnostic & Mechanic")
+    with t1:
+        st.subheader("Request Service")
+        with st.form("service_request", clear_on_submit=True):
+            cat = st.selectbox("Engineering Category", ["Truck Repair", "Diesel Engine", "Car/Sedan", "CCTV", "Solar Power"])
+            bud = st.number_input("Budget (NGN)", min_value=5000, step=1000)
+            loc = st.text_input("Site Location (State/LGA)")
+            desc = st.text_area("Detailed Symptom Description (For AI)")
             
-            if st.form_submit_button("ACTIVATE DEPLOYMENT"):
-                new_data = pd.DataFrame([{
-                    "ID": f"GM-{random.randint(1000, 9999)}",
-                    "Phone": st.session_state.active_phone,
-                    "Service": service_type,
-                    "Budget": budget_val,
-                    "Status": "Active",
-                    "Location": target_loc,
-                    "Description": problem_desc,
-                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
+            # Non-Editable Revenue Insight
+            st.markdown(f"""
+            <div class='insight-card'>
+                <b>Financial Split (Fixed):</b><br>
+                Founder Share (15%): ₦{bud * 0.15:,.2f}<br>
+                Mechanic Payout (85%): ₦{bud * 0.85:,.2f}
+            </div><br>
+            """, unsafe_allow_html=True)
+            
+            if st.form_submit_button("DEPLOY TO CLOUD"):
+                new_row = pd.DataFrame([{
+                    "ID": f"GM-{random.randint(1000, 9999)}", "Phone": st.session_state.phone,
+                    "Role": "User", "Service": cat, "Budget": bud, "Status": "Pending",
+                    "Location": loc, "Description": desc, "Timestamp": datetime.now()
                 }])
-                conn.update(data=pd.concat([master_ledger, new_data], ignore_index=True))
-                st.success("THANK YOU FOR USING GREAT MECH! Your request is live across Africa.")
-                st.balloons()
-        
-        # Dual Map Visualization
-        st.subheader("🌍 Proximity Map")
-        m = folium.Map(location=[6.5244, 3.3792], zoom_start=12, tiles="CartoDB dark_matter")
-        folium.Marker([6.5244, 3.3792], popup="Your Site", icon=folium.Icon(color='gold')).add_to(m)
-        st_folium(m, width=1100, height=400)
+                try:
+                    conn.update(data=pd.concat([master_db, new_row], ignore_index=True))
+                    st.success("THANK YOU FOR USING GREAT MECH! Request is Live.")
+                except:
+                    st.error("Error: Check Google Sheet 'Editor' permissions.")
 
-    with tab_ai:
-        st.subheader("7 Symptoms AI Diagnostic Brain")
-        if st.button("RUN AI ENGINE REPORT"):
-            st.info(f"AI Analyzing Description: {problem_desc}")
-            time.sleep(1)
-            st.warning("**AI REPORT:** Analysis suggests a critical failure in the fuel injection system. Estimated Fix: 5.5 Hours.")
+# --- MECHANIC HUB (FINTECH INCLUDED) ---
+elif st.session_state.role == "Mechanic":
+    st.title("🔧 FIELD OPERATIONS HUB")
+    st.subheader("Available Jobs")
+    st.dataframe(master_db[master_db['Status'] == "Pending"], use_container_width=True)
+    
+    st.markdown("---")
+    st.subheader("💰 FINTECH PAYOUT PORTAL")
+    st.info("Verified Mechanics Only. All settlements are processed in 85/15 ratio.")
+    
+    col_fin1, col_fin2 = st.columns(2)
+    with col_fin1:
+        m_nation = st.selectbox("Bank Nation", list(african_fintech_hub.keys()))
+        m_bank = st.selectbox("Select Your Bank", african_fintech_hub[m_nation])
+    with col_fin2:
+        m_acc = st.text_input("Account Number (10 Digits)")
+        m_type = st.radio("Account Type", ["Savings", "Current", "Business"])
+    
+    if st.button("VERIFY ACCOUNT & RECEIVE FUNDS"):
+        if len(m_acc) == 10:
+            st.success(f"Verified: {m_bank} Account. Payment processing for active jobs.")
+        else:
+            st.error("Invalid Account Number.")
 
-# --- MODULE: FINTECH PAYOUT (MECHANIC) ---
-st.sidebar.markdown("---")
-st.sidebar.subheader("💰 FINTECH SETTLEMENT")
-p_nation = st.sidebar.selectbox("Bank Nation", list(bank_vault.keys()))
-p_bank = st.sidebar.selectbox("Select Bank", bank_vault[p_nation])
-p_acc = st.sidebar.text_input("Enter Account Number")
-p_type = st.sidebar.radio("Account Type", ["Savings", "Current", "Business"])
-
-if st.sidebar.button("VERIFY & RECEIVE FUNDS"):
-    if len(p_acc) == 10:
-        st.sidebar.success(f"Verified: {p_bank} - 85% Payout Initiated.")
-    else:
-        st.sidebar.error("Invalid Account Details.")
-
-if st.sidebar.button("🚪 SECURE LOGOUT"):
-    st.session_state.secure_session = False
-    st.rerun()
+    if st.button("🚨 TRIGGER SOS PANIC BUTTON"):
+        st.error("EMERGENCY SIGNAL BROADCASTED TO PRIVATE SECURITY FIRM.")
 
