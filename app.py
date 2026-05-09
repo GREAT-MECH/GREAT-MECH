@@ -6,117 +6,120 @@ from streamlit_folium import st_folium
 from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 
-# --- 1. SUPREME BRANDING & IDENTITY ---
-st.set_page_config(page_title="Great Mech Supreme Global", layout="wide", page_icon="🦾")
+# --- 1. SUPREME BRANDING & LANGUAGE ENGINE ---
+st.set_page_config(page_title="Great Mech Supreme OS", layout="wide", page_icon="🦾")
 
-# The Pinned "Black & Gold" DNA
-st.markdown("""
+# Global African Language Dictionary
+languages = {
+    "English": {"greet": "Welcome, Founder", "deploy": "Deploy Request", "status": "Online"},
+    "Pidgin": {"greet": "Abeg Welcome, Oga Founder", "deploy": "Send Work", "status": "I Dey Online"},
+    "Yoruba": {"greet": "Ẹ n lẹ o, Oludasile", "deploy": "Fi iṣẹ ranṣẹ", "status": "Mo wa lori ayelujara"},
+    "Hausa": {"greet": "Sannu, Shugaba", "deploy": "Tura nema", "status": "Ina kan layi"},
+    "Igbo": {"greet": "Nnọọ, Onye nchoputa", "deploy": "Ziga arịrịọ", "status": "Anọ m n'ịntanetị"},
+    "Swahili": {"greet": "Karibu, Mwanzilishi", "deploy": "Tuma ombi", "status": "Niko mtandaoni"}
+}
+
+st.sidebar.title("🌍 GLOBAL SETTINGS")
+lang_choice = st.sidebar.selectbox("Preferred Language", list(languages.keys()))
+st.sidebar.success(f"Status: {languages[lang_choice]['status']}")
+
+# The Black & Gold DNA
+st.markdown(f"""
 <style>
-    .stApp { background-color: #050505; color: #FFFFFF; font-family: 'Helvetica Neue', sans-serif; }
-    h1, h2, h3 { color: #D4AF37 !important; text-transform: uppercase; letter-spacing: 2px; }
-    .stButton>button { 
+    .stApp {{ background-color: #050505; color: #FFFFFF; font-family: 'Helvetica Neue', sans-serif; }}
+    h1, h2, h3 {{ color: #D4AF37 !important; text-transform: uppercase; letter-spacing: 2px; }}
+    .stButton>button {{ 
         background: linear-gradient(45deg, #D4AF37, #AF8700); 
         color: black !important; font-weight: bold; border-radius: 10px; border: none; width: 100%; height: 3.5em;
-    }
-    [data-testid="stMetricValue"] { color: #D4AF37 !important; font-family: 'Courier New', monospace; }
-    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-    .stTabs [aria-selected="true"] { border-bottom: 2px solid #D4AF37 !important; }
+    }}
+    [data-testid="stMetricValue"] {{ color: #D4AF37 !important; font-family: 'Courier New', monospace; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. IDENTITY PORTAL (The Entrance) ---
+# --- 2. IDENTITY PORTAL ---
 if 'role' not in st.session_state:
     st.session_state.role = None
 
 if st.session_state.role is None:
-    st.title("🦾 GREAT MECH SUPREME: IDENTITY PORTAL")
-    st.subheader("Select your access level to begin moving Africa to the next level.")
-    col1, col2, col3 = st.columns(3)
-    if col1.button("🏛️ FOUNDER COMMAND"): st.session_state.role = "Founder"
-    if col2.button("🔧 MECHANIC HUB"): st.session_state.role = "Mechanic"
-    if col3.button("👤 USER MARKETPLACE"): st.session_state.role = "User"
+    st.title(f"🦾 {languages[lang_choice]['greet']}")
+    cols = st.columns(4)
+    if cols[0].button("🏛️ FOUNDER"): st.session_state.role = "Founder"
+    if cols[1].button("🔧 MECHANIC"): st.session_state.role = "Mechanic"
+    if cols[2].button("👤 USER"): st.session_state.role = "User"
+    if cols[3].button("🤝 PARTNER"): st.session_state.role = "Partner"
     st.stop()
 
-# Logout in Sidebar
-if st.sidebar.button(f"LOGOUT [{st.session_state.role}]"):
-    st.session_state.role = None
-    st.rerun()
-
-# --- 3. CLOUD ENGINE & DATABASE ---
+# --- 3. CLOUD LEDGER & INVENTORY ENGINE ---
 conn = st.connection("gsheets", type=GSheetsConnection)
-def get_ledger():
-    try:
-        return conn.read(ttl=0)
-    except:
-        return pd.DataFrame(columns=['ID', 'Service', 'Budget', 'Status', 'Location', 'Timestamp'])
+def get_db():
+    try: return conn.read(ttl=0)
+    except: return pd.DataFrame(columns=['ID', 'Service', 'Budget', 'Status', 'Location', 'LGA', 'Timestamp'])
 
-db_data = get_ledger()
+db = get_db()
 
 # --- 4. THE VISION MODULES ---
 
-# --- FOUNDER COMMAND ---
+# --- FOUNDER: THE MONEY & INVENTORY ---
 if st.session_state.role == "Founder":
-    st.title("🏛️ FOUNDER COMMAND CENTER")
-    if not db_data.empty:
-        total = pd.to_numeric(db_data['Budget']).sum()
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Total Ecosystem Value", f"₦{total:,.2f}")
-        c2.metric("Founder 15% Share", f"₦{total * 0.15:,.2f}")
-        c3.metric("Service Categories", "Truck, Solar, CCTV, Diesel")
-        st.subheader("Global Operations Ledger")
-        st.dataframe(db_data, use_container_width=True)
-    else:
-        st.info("The Ledger is currently awaiting the first deployment.")
+    st.title("🏛️ FOUNDER COMMAND")
+    if not db.empty:
+        db['Budget'] = pd.to_numeric(db['Budget'], errors='coerce').fillna(0)
+        total = db['Budget'].sum()
+        m1, m2 = st.columns(2)
+        m1.metric("Total Ecosystem Value", f"₦{total:,.2f}")
+        m2.metric("Founder 15% Net", f"₦{total * 0.15:,.2f}")
+        
+        st.subheader("Inventory Management")
+        for index, row in db.iterrows():
+            col1, col2 = st.columns([4, 1])
+            col1.write(f"**ID:** {row['ID']} | **Job:** {row['Service']} | **Budget:** ₦{row['Budget']}")
+            if col2.button(f"🗑️ DELETE", key=f"del_{row['ID']}"):
+                new_db = db.drop(index)
+                conn.update(data=new_db)
+                st.rerun()
+    else: st.info("Ledger Empty.")
 
-# --- USER MARKETPLACE ---
+# --- USER: MARKETPLACE, AI, & MAPS ---
 elif st.session_state.role == "User":
     st.title("📍 USER MARKETPLACE")
-    tab_deploy, tab_ai = st.tabs(["🚀 DEPLOY REQUEST", "🧠 AI DIAGNOSTICS"])
+    tab1, tab2, tab3 = st.tabs(["🚀 DEPLOY REQUEST", "🧠 AI DIAGNOSTICS", "🧾 RECEIPTS"])
     
-    with tab_deploy:
-        col_in, col_map = st.columns([1, 1.5])
+    with tab1:
+        col_in, col_map = st.columns([1, 1])
         with col_in:
-            service = st.selectbox("Category", ["Diesel Engine", "Truck Repair", "Generator", "Solar", "CCTV"])
+            service = st.selectbox("Category", ["🚛 Truck", "🏎️ Car", "⚙️ Diesel Engine", "📹 CCTV", "☀️ Solar"])
             budget = st.number_input("Proposed Budget (NGN)", min_value=5000)
-            loc_input = st.text_input("Current Location", "Lagos, Nigeria")
+            country = st.selectbox("Country", ["Nigeria", "Ghana", "South Africa", "Kenya", "Egypt", "Rest of Africa (54)"])
+            state = st.selectbox("State (Nigeria)", ["Lagos", "Kano", "Rivers", "Oyo", "Enugu", "...36 States"])
+            lga = st.text_input("Local Government Area (LGA)")
             
-            if st.button("ACTIVATE DEPLOYMENT"):
-                new_job = pd.DataFrame([{
-                    "ID": f"GM-{random.randint(1000, 9999)}",
-                    "Service": service, "Budget": budget,
-                    "Status": "Pending", "Location": loc_input,
-                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
-                }])
-                try:
-                    updated_df = pd.concat([db_data, new_job], ignore_index=True)
-                    conn.update(data=updated_df)
-                    st.success("SUCCESS: Job Broadcasted to the Great Mech Cloud!")
-                    st.balloons()
-                except:
-                    st.warning("LOCAL MODE: Job added to app memory. (Please ensure Google Sheet is set to 'Editor')")
-
+            if st.button(languages[lang_choice]['deploy']):
+                new_job = pd.DataFrame([{"ID": f"GM-{random.randint(1000, 9999)}", "Service": service, "Budget": budget, "Status": "Pending", "Location": state, "LGA": lga, "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")}])
+                conn.update(data=pd.concat([db, new_job], ignore_index=True))
+                st.success("Deployment Active!")
+                st.balloons()
+        
         with col_map:
-            st.write("🌍 Logistic Map (Distance & Time Estimates)")
+            st.subheader("🌍 Logistics Hub")
             m = folium.Map(location=[6.5244, 3.3792], zoom_start=12, tiles="CartoDB dark_matter")
-            st_folium(m, width=600, height=400)
+            st_folium(m, width=500, height=350)
+            st.write("⏱️ **Estimated Arrival:** 24 mins | 🛣️ **Distance:** 12.4 km")
 
-    with tab_ai:
-        st.subheader("7 Symptoms AI Diagnostic Report")
-        symptoms = st.multiselect("Identify Symptoms", ["Overheating", "Black Smoke", "Fluid Leak", "Power Loss", "Strange Noise", "Hard Start", "Low Pressure"])
-        if st.button("GENERATE AI DIAGNOSIS"):
-            st.write("---")
-            st.write("**Diagnostic Result:** Based on identified symptoms, we recommend checking the fuel injection system.")
-            st.write("**Estimated Labor:** 4.5 Hours | **Complexity:** High")
+    with tab2:
+        st.subheader("7 Symptoms AI Diagnostic")
+        symp = st.multiselect("Symptoms", ["Overheating", "Black Smoke", "Fluid Leak", "Power Loss", "Strange Noise", "Hard Start", "Low Pressure"])
+        if st.button("GENERATE REPORT"):
+            st.info("AI Analysis: High probability of fuel injector blockage. Recommend cleaning.")
 
-# --- MECHANIC HUB ---
+# --- MECHANIC: HUB & SOS ---
 elif st.session_state.role == "Mechanic":
-    st.title("🔧 MECHANIC OPERATIONS")
-    st.subheader("Available Jobs Near You")
-    st.dataframe(db_data[db_data['Status'] == "Pending"])
+    st.title("🔧 FIELD HUB")
+    st.dataframe(db[db['Status'] == "Pending"])
+    col_call, col_text = st.columns(2)
+    col_call.button("📞 CALL USER")
+    col_text.button("💬 TEXT USER")
     
     st.markdown("---")
-    st.subheader("🚨 SOS EMERGENCY SHIELD")
-    if st.button("TRIGGER PANIC BUTTON"):
-        st.error("🚨 EMERGENCY SIGNAL SENT TO PRIVATE SECURITY FIRM.")
-        st.toast("Capturing GPS coordinates...")
+    if st.button("🚨 TRIGGER SOS PANIC BUTTON"):
+        st.error("🚨 SECURITY ALERT SENT TO PRIVATE FIRM.")
 
