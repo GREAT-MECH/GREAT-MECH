@@ -3,5 +3,6 @@ pandas
 numpy
 folium
 streamlit-folium
-streamlit-js-eval
-st-gsheets-connection
+streamlit-lottie
+streamlit-gsheets
+requests
