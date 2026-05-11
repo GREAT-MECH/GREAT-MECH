@@ -1,5 +1,6 @@
 # --- 1. SOVEREIGN PAGE CONFIG ---
 # Must be the very first line to prevent the NameError you encountered.
+import streamlit as st
 st.set_page_config(
     page_title="Great Mech Empire", 
     page_icon="🌍", 
