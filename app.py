@@ -1,118 +1,109 @@
 import streamlit as st
-import pandas as pd
 import requests
-import time
-import folium
-from streamlit_lottie import st_lottie
-from streamlit_folium import st_folium
-from streamlit_gsheets import GSheetsConnection
 
-# --- 1. SUPREME BRANDING & UI/UX (Black & Gold) ---
-st.set_page_config(page_title="Great Mech Supreme", layout="wide")
+# --- 1. PAGE CONFIGURATION ---
+st.set_page_config(page_title="Great Mech Empire", page_icon="🌍", layout="centered")
 
+# --- 2. SUPREME CSS (Figma-to-Code Styles) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #050505; color: white; }
-    .main-title { text-align: center; font-size: 50px; font-weight: 900; color: #D4AF37; margin-bottom: 0; }
+    /* Dark Mode Sovereignty */
+    .stApp {
+        background-color: #050505;
+        color: white;
+    }
+    
+    /* Center the Africa Logo & Main Title */
+    .main-title {
+        text-align: center;
+        font-size: 50px;
+        font-weight: 900;
+        color: #D4AF37;
+        margin-bottom: 0px;
+    }
+
+    /* Your "Moving Africa" Typing Animation */
     .moving-africa {
-        color: #D4AF37; font-size: 20px; font-weight: bold; text-align: center;
-        overflow: hidden; white-space: nowrap; border-right: 3px solid #D4AF37;
-        margin: 0 auto; width: fit-content; animation: typing 4s steps(40, end) infinite;
+        color: #D4AF37;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+        margin: 0 auto;
+        width: fit-content;
+        border-right: 3px solid #D4AF37;
+        animation: typing 4s steps(40, end) infinite;
     }
     @keyframes typing { from { width: 0 } to { width: 100% } }
+
+    /* SOS Red Panic Button */
     .sos-button {
-        position: fixed; bottom: 20px; right: 20px; background-color: #FF0000;
-        color: white; border-radius: 50px; padding: 15px 25px; font-weight: bold;
-        box-shadow: 0px 4px 15px rgba(255, 0, 0, 0.5); z-index: 1000; text-decoration: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #FF0000;
+        color: white;
+        border-radius: 50px;
+        padding: 15px 25px;
+        font-weight: bold;
+        box-shadow: 0px 4px 15px rgba(255, 0, 0, 0.5);
+        z-index: 1000;
+        text-decoration: none;
     }
-    .status-online { color: #00FF00; font-size: 14px; font-weight: bold; }
+
+    /* Gold Buttons for the Empire */
+    .stButton>button {
+        width: 100%;
+        background-color: #D4AF37 !important;
+        color: black !important;
+        font-weight: bold !important;
+        border-radius: 10px !important;
+        border: none !important;
+        height: 3em !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
+# --- 3. PERSISTENT PANIC BUTTON ---
+st.markdown('<a href="tel:911" class="sos-button">🚨 PANIC BUTTON</a>', unsafe_allow_html=True)
 
-# Persistent Floating Panic Button
-st.markdown('<a href="tel:911" class="sos-button">🆘 PANIC BUTTON</a>', unsafe_allow_html=True)
+# --- 4. BRANDING HEADER (Africa Logo) ---
+st.markdown("<br>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1.5, 1, 1.5])
+with col2:
+    # Gold Africa Logo centered as requested
+    st.image("https://img.icons8.com/isometric/512/africa.png", width=120) 
 
-# --- 2. ASSET LOADING ---
-def load_lottie(url):
-    try: return requests.get(url).json()
-    except: return None
+st.markdown("<div class='main-title'>GREAT MECH</div>", unsafe_allow_html=True)
+st.markdown("<div class='moving-africa'>Moving Africa to the next level... 🌍</div>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #00FF00; font-size: 14px;'>● System Status: Secure across 54 Countries</p>", unsafe_allow_html=True)
+st.markdown("<hr style='border: 0.5px solid #333;'>", unsafe_allow_html=True)
 
-MECHANIC_ANIM = load_lottie("https://lottie.host/807e3240-5e5d-4f11-9a77-4f6c4966601b/Iu7E9x7A4C.json")
-
-# --- 3. SESSION STATE & NAVIGATION ---
-if 'page' not in st.session_state: st.session_state.page = "Splash"
-if 'auth' not in st.session_state: st.session_state.auth = False
-
-# --- 4. THE FLOW ---
-
-# STAGE A: SPLASH SCREEN (Opening Header)
-if st.session_state.page == "Splash":
-    st.markdown("<div class='main-title'>GREAT MECH</div>", unsafe_allow_html=True)
-    if MECHANIC_ANIM: st_lottie(MECHANIC_ANIM, height=350)
-    st.markdown("<div class='moving-africa'>Moving Africa to the Next Level... 🌍</div>", unsafe_allow_html=True)
-    time.sleep(4)
-    st.session_state.page = "Login"
-    st.rerun()
-
-# STAGE B: LOGIN/REGISTER (Resq X Style)
-if not st.session_state.auth:
-    st.markdown("<h2 style='text-align:center;'>Create Account</h2>", unsafe_allow_html=True)
-    with st.container():
-        c1, c2, c3 = st.columns([1, 2, 1])
-        with c2:
-            st.text_input("Full Name")
-            col_a, col_b = st.columns([1, 2])
-            with col_a:
-                st.selectbox("Code", ["🇳🇬 +234", "🇰🇪 +254", "🇿🇦 +27", "🇬🇭 +233", "🌍 +Other"])
-            with col_b:
-                st.text_input("Phone Number")
-            st.text_input("Password", type="password")
-            st.checkbox("I accept the Terms and Privacy Policy")
-            if st.button("ENTER EMPIRE", use_container_width=True):
-                st.session_state.auth = True
-                st.rerun()
-    st.stop()
-
-# STAGE C: CORE DASHBOARD (The Welcome & Status)
-st.markdown("<p class='status-online'>● Online Status: Secure</p>", unsafe_allow_html=True)
-st.title("Welcome back, Founder")
-
-tab1, tab2, tab3 = st.tabs(["🚀 Deploy Service", "📊 Founder Command", "🗺️ Live Radar"])
-
-with tab1:
-    st.subheader("5 Core Services")
-    service = st.selectbox("Select Engine Category", ["🚛 Truck", "🏎️ Car", "⚙️ Generator", "📹 CCTV", "☀️ Solar"])
+# --- 5. APP LOGIC / REGISTRATION ---
+st.subheader("Registration Portal")
+with st.container():
+    name = st.text_input("Full Name", placeholder="Enter your full name")
     
-    st.subheader("7 Symptoms & Description")
-    symptoms = st.multiselect("Common Signs", ["Overheating", "Strange Noise", "Smoke", "Will not Start", "Battery Dead", "Leakage", "Performance Drop"])
-    desc = st.text_area("Describe the issue in detail")
+    # Country Code Selection for all 54 African Countries
+    country_code = st.selectbox("Country Code", ["🇳🇬 +234", "🇰🇪 +254", "🇿🇦 +27", "🇬🇭 +233", "🇪🇬 +20"])
+    phone = st.text_input("Phone Number", placeholder="813 966 499")
     
-    if st.button("🤖 GENERATE AI DIAGNOSTIC"):
-        with st.spinner("AI analyzing symptoms..."):
-            time.sleep(2)
-            st.warning(f"AI Result: High probability of {symptoms[0] if symptoms else 'System Fault'}. Report sent to local mechanics.")
-
-    st.divider()
-    st.subheader("Payment & Checkout")
-    st.write("Quotes will be generated by mechanics + 15% App Service Fee.")
-    pay_method = st.radio("Payment Method", ["Credit/Debit Card", "Bank Transfer"])
-    if pay_method == "Bank Transfer":
-        st.info("Transfer to: Great Mech Ltd | Kuda Bank | 2048559201")
+    st.checkbox("I accept the Terms and Privacy Policy")
     
-    if st.button("DEPLOY & PAY"):
-        st.success("Great Mech deployed! Moving Africa to the next level. Thanks for using Great Mech!")
+    if st.button("ENTER EMPIRE"):
+        st.success(f"Welcome to the Great Mech Empire, {name}!")
 
-with tab2:
-    st.subheader("Revenue: All 54 African Countries")
-    # Revenue Chart Logic
-    chart_data = pd.DataFrame({'Country': ['Nigeria', 'Kenya', 'Ghana', 'Egypt'], 'Revenue': [1500, 800, 600, 400]})
-    st.bar_chart(chart_data.set_index('Country'))
+# --- 6. COMMISSION CALCULATOR (15% Logic) ---
+st.sidebar.title("Founder Command")
+st.sidebar.info("Auto-calculating 15% Service Charge for rendered services.")
+quote = st.sidebar.number_input("Mechanic Quote ($)", min_value=0.0)
+transport = st.sidebar.number_input("Transport Fee ($)", min_value=0.0)
 
-with tab3:
-    st.subheader("Live Location Radar")
-    # Using your current location logic
-    m = folium.Map(location=[6.5244, 3.3792], zoom_start=13, tiles="CartoDB dark_matter")
-    folium.Marker([6.5244, 3.3792], popup="Your Exact Position", icon=folium.Icon(color='gold')).add_to(m)
-    st_folium(m, width=1000, height=500)
+if quote > 0:
+    # Calculating total with 15% service charge
+    service_charge = (quote + transport) * 0.15
+    total = (quote + transport) + service_charge
+    st.sidebar.write(f"**Great Mech Fee (15%):** ${service_charge:.2f}")
+    st.sidebar.write(f"### **Total User Payment: ${total:.2f}**")
 
