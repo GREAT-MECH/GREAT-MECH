@@ -28,26 +28,6 @@ st.markdown("""
     .status-online { color: #00FF00; font-size: 14px; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
-# --- Line 33: Start of Visual Branding ---
-st.markdown("<br>", unsafe_allow_html=True) # Spacing from top
-
-# This creates three columns to center the logo perfectly
-col1, col2, col3 = st.columns([1.5, 1, 1.5]) 
-
-with col2:
-    # This is where the Africa Logo is called
-    st.image("https://img.icons8.com/isometric/512/africa.png", width=120) 
-
-# This creates the "Great Mech" title with your "moving-africa" animation
-st.markdown("""
-    <div class='main-title' style='text-align: center;'>GREAT MECH</div>
-    <div class='moving-africa'>Moving Africa to the next level... 🌍</div>
-    <div style='text-align: center; margin-top: 10px;'>
-        <span class='status-online'>● System Status: Secure across 54 Countries</span>
-    </div>
-    <hr style="border: 0.5px solid #D4AF37; margin-top: 20px;">
-""", unsafe_allow_html=True)
-
 
 
 # Persistent Floating Panic Button
