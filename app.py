@@ -72,6 +72,5 @@ footer {
 }
 </style>
 """, unsafe_allow_html=True)
-```
 
 ### Key Features of the Updated Code:
