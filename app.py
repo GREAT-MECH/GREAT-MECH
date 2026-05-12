@@ -1,4 +1,5 @@
 # --- 1. SOVEREIGN PAGE CONFIGURATION ---
+import streamlit as st
 st.set_page_config(
     page_title="Great Mech Empire", 
     page_icon="🌍", 
