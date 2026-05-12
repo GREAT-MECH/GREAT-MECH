@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-# --- 1. CONFIGURE PAGE ---
+# --- 1. CONFIGURE THE PAGE ---
 st.set_page_config(page_title="Great Mech", page_icon="🌍", layout="centered")
 
 # --- 2. DEFINE STYLES ---
@@ -18,6 +18,9 @@ h1 {
 }
 .sidebar .sidebar-content {
     background-color: #333;
+}
+footer {
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -51,26 +54,39 @@ st.markdown(
 st.write("Welcome to Great Mech! We are dedicated to innovation and improvement in technology.")
 st.write("Here, we aim to provide resources and support for advancing various fields within Africa.")
 
-# --- 8. INPUT FIELD ---
+# --- 8. INPUT FIELD FOR USER IDEAS ---
 user_input = st.text_input("Your Ideas for Innovation:", placeholder="Share your thoughts...")
 
-# --- 9. LOADING ANIMATION ---
+# --- 9. SUBMIT BUTTON WITH PROCESSING ANIMATION ---
 if st.button("Submit"):
-    with st.spinner('Processing your input...'):
-        time.sleep(2) # Simulate processing time
-    st.success(f"Thank you for your input: '{user_input}'")
+    if user_input: # Check if input is not empty
+        with st.spinner('Processing your input...'):
+            time.sleep(2) # Simulate processing time
+        st.success(f"Thank you for your input: '{user_input}'")
+    else:
+        st.error("Please enter your ideas before submitting.")
 
 # --- 10. ADDITIONAL CONTENT ---
 st.subheader("Our Services")
 st.write("We provide solutions in engineering, technology development, and much more.")
+st.write("Explore innovative technologies, workshops, and partnerships designed to elevate African enterprises.")
 
-# --- 11. FOOTER ---
+# --- 11. COLLECT USER FEEDBACK ---
+if st.button("Give Feedback"):
+    feedback = st.text_area("Your Feedback:", placeholder="What do you think about Great Mech?")
+    if st.button("Submit Feedback"):
+        with st.spinner('Submitting feedback...'):
+            time.sleep(2)
+        st.success("Your feedback has been submitted. Thank you!")
+
+# --- 12. CONCLUSION AND FUTURE PLANS ---
 st.markdown("""
-<style>
-footer {
-    display: none;
-}
-</style>
-""", unsafe_allow_html=True)
+We are continuously working to improve our platform. Stay tuned for updates and new features!
+""")
 
-### Key Features of the Updated Code:
+# --- 13. FOOTER --- 
+st.markdown("""
+<div style='text-align: center;'>
+    <small>&copy; 2026 Great Mech. All rights reserved.</small>
+</div>
+""", unsafe_allow_html=True)
