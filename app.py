@@ -1,4 +1,5 @@
 # --- 1. PAGE ENGINE CONFIG ---
+import streamlit as st
 st.set_page_config(page_title="Great Mech Empire", page_icon="🌍", layout="centered")
 
 # --- 2. THE DESIGN SYSTEM (CSS) ---
