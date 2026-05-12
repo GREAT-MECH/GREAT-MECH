@@ -1,111 +1,114 @@
 import streamlit as st
 import time
 
-# --- 1. GLOBAL ENGINE CONFIG ---
+# --- 1. GLOBAL ENGINE START ---
+# This MUST be the first command to prevent the NameError
 st.set_page_config(page_title="Great Mech", page_icon="🌍", layout="centered")
 
-# --- 2. ELIMINATE THE "0" & DEFINE PREMIUM STYLE (CSS) ---
+# --- 2. LANGUAGE TRANSLATION ENGINE ---
+# This ensures the app actually changes when you select a language
+languages = {
+    "English": {
+        "slogan": "Moving Africa to the next level...",
+        "status": "● System Secure across 54 Countries",
+        "tab1": "🏛️ Identity", "tab2": "🛠️ Service Portal", "tab3": "💰 Revenue",
+        "cat": "Select Category", "desc": "Issue Description", "bargain": "Bargaining Terminal",
+        "mech_p": "Mechanic Price ($)", "share": "Your 15% Share", "total": "Final User Price"
+    },
+    "Français": {
+        "slogan": "Faire passer l'Afrique au niveau supérieur...",
+        "status": "● Système sécurisé dans 54 pays",
+        "tab1": "🏛️ Identité", "tab2": "🛠️ Portail de services", "tab3": "💰 Revenu",
+        "cat": "Choisir une catégorie", "desc": "Description du problème", "bargain": "Terminal de négociation",
+        "mech_p": "Prix du mécanicien ($)", "share": "Votre part de 15%", "total": "Prix final pour l'utilisateur"
+    },
+    "Swahili": {
+        "slogan": "Kuiongoza Afrika katika kiwango kingine...",
+        "status": "● Mfumo ni Salama katika nchi 54",
+        "tab1": "🏛️ Utambulisho", "tab2": "🛠️ Huduma", "tab3": "💰 Mapato",
+        "cat": "Chagua Kitengo", "desc": "Maelezo ya Tatizo", "bargain": "Eneo la Majadiliano",
+        "mech_p": "Bei ya Fundi ($)", "share": "Gawio lako la 15%", "total": "Bei ya Mwisho ya Mtumiaji"
+    }
+}
+
+# --- 3. PREMIUM UI STYLING (CSS) ---
 st.markdown("""
 <style>
-    /* Kill the artifact "0" and force pitch black */
-    .stApp { background-color: #050505; color: white; }
-    
-    /* Clean Top-Bar for Language */
-    .top-bar { display: flex; justify-content: flex-end; padding: 10px; }
-
-    /* Branding Alignment */
-    .brand-header { text-align: center; margin-top: -50px; }
+    /* Kill the '0' artifact and background ghosts */
+    .stApp { background-color: #050505 !important; color: white !important; }
+    div.block-container { padding-top: 2rem; }
     
     .main-title {
-        font-size: 58px; font-weight: 900; color: #D4AF37;
-        letter-spacing: 5px; margin-bottom: 0px; text-transform: uppercase;
+        text-align: center; font-size: 55px; font-weight: 900; 
+        color: #D4AF37; letter-spacing: 5px; margin-top: -20px;
     }
     
-    .moving-africa {
-        color: #D4AF37; font-size: 20px; font-weight: bold;
-        text-align: center; border-right: 3px solid #D4AF37;
-        white-space: nowrap; overflow: hidden; margin: 0 auto;
-        width: fit-content; animation: typing 3.5s steps(30, end) infinite;
+    .typing-text {
+        color: #D4AF37; font-size: 20px; font-weight: bold; text-align: center;
+        border-right: 3px solid #D4AF37; white-space: nowrap; overflow: hidden;
+        margin: 0 auto; width: fit-content; animation: typing 3.5s steps(30, end) infinite;
     }
     @keyframes typing { from { width: 0 } to { width: 100% } }
 
-    /* SOS Button */
-    .sos-button {
-        position: fixed; bottom: 30px; right: 30px;
-        background-color: #FF0000; color: white; padding: 20px 30px;
-        border-radius: 50px; font-weight: bold; z-index: 9999;
-        text-decoration: none; box-shadow: 0 10px 30px rgba(255,0,0,0.5);
+    .sos-btn {
+        position: fixed; bottom: 30px; right: 30px; background-color: #FF0000;
+        color: white; padding: 20px 30px; border-radius: 50px; font-weight: bold;
+        z-index: 9999; text-decoration: none;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. TOP LEVEL: LANGUAGE & SECURITY ---
-st.markdown('<a href="tel:911" class="sos-button">🆘 SOS PANIC</a>', unsafe_allow_html=True)
+# --- 4. TOP BAR: LANGUAGE SELECTOR ---
+st.markdown('<a href="tel:911" class="sos-btn">🆘 SOS PANIC</a>', unsafe_allow_html=True)
 
-col_lang_left, col_lang_right = st.columns([4, 1])
-with col_lang_right:
-    # Preferred Language Selection
-    st.selectbox("🌐 Language", ["English", "Français", "Português", "Arabic", "Swahili"])
+col_a, col_b = st.columns([4, 1.2])
+with col_b:
+    sel_lang = st.selectbox("🌐", list(languages.keys()))
+    t = languages[sel_lang] # Load the chosen language dictionary
 
-# --- 4. THE VISUAL CORE (GOLDEN AFRICA LOGO) ---
-# We use a container to ensure no stray characters (like 0) can leak out
+# --- 5. THE BRANDING CORE (FIXED LOGO & NO '0') ---
+# Use a clear container to prevent layout leaks
 with st.container():
-    c1, c2, c3 = st.columns([1, 1.5, 1])
-    with c2:
-        # Using your specific gold map file
+    l_col, m_col, r_col = st.columns([1, 1.8, 1])
+    with m_col:
         try:
             st.image("316436.png", use_container_width=True)
         except:
-            # High-fidelity backup if file is not in directory
             st.image("https://img.icons8.com/isometric/512/africa.png", width=250)
 
-st.markdown("<div class='brand-header'><div class='main-title'>GREAT MECH</div></div>", unsafe_allow_html=True)
-st.markdown("<div class='moving-africa'>Moving Africa to the next level... 🌍</div>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#00FF00; font-weight:bold;'>● System Secure across 54 Countries</p>", unsafe_allow_html=True)
-st.markdown("<hr style='border: 0.5px solid #D4AF37;'>", unsafe_allow_html=True)
+st.markdown(f"<div class='main-title'>GREAT MECH</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='typing-text'>{t['slogan']}</div>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align:center; color:#00FF00;'>{t['status']}</p>", unsafe_allow_html=True)
 
-# --- 5. THE WORKFLOW PORTALS ---
-tabs = st.tabs(["🏛️ Identity Verification", "🛠️ Service Portal", "💰 Empire Revenue"])
+# --- 6. SOVEREIGN WORKFLOW ---
+tab1, tab2, tab3 = st.tabs([t['tab1'], t['tab2'], t['tab3']])
 
-with tabs[0]:
-    st.write("### Engineer & Founder Onboarding")
-    st.text_input("Sovereign Name", placeholder="Founder Credentials")
-    st.button("AUTHORIZE ACCESS")
+with tab1:
+    st.subheader("Founder's Entry")
+    st.text_input("Name", placeholder="Founder Credentials")
+    st.button("ENTER EMPIRE")
 
-with tabs[1]:
-    st.write("### Operational Categories")
-    # 5 Core Services with Emojis
-    service = st.selectbox("Select Service", [
-        "🚛 Heavy Duty Truck Maintenance",
-        "🚗 Luxury & Utility Car Repair",
-        "⚙️ Diesel Engine & Power Generators",
-        "📹 CCTV & Security Systems",
-        "☀️ Solar Energy Engineering"
+with tab2:
+    st.subheader(t['cat'])
+    # Core 5 Categories [cite: 2026-05-08]
+    st.selectbox("Service", [
+        "🚛 Heavy Truck", "🚗 Luxury Car", "⚙️ Diesel/Generator", 
+        "📹 CCTV Systems", "☀️ Solar Engineering"
     ])
+    st.text_area(t['desc'])
     
-    st.text_area("Detailed Issue Description", placeholder="Describe the mechanical or technical requirements...")
+    st.markdown(f"### 🤝 {t['bargain']}")
+    m_price = st.number_input(t['mech_p'], min_value=0.0)
     
-    st.markdown("#### 🤝 Mechanic Bargaining Terminal")
-    mech_offer = st.number_input("Negotiated Price with Mechanic ($)", min_value=0.0, step=10.0)
-    
-    if mech_offer > 0:
-        # Maintain 15% share logic
-        founder_commission = mech_offer * 0.15
-        user_total = mech_offer + founder_commission
-        
-        st.info(f"Great Mech Share (15%): **${founder_commission:,.2f}**")
-        st.success(f"Final Price to Display to User: **${user_total:,.2f}**")
-        
-        if st.button("LOCK PRICE & NOTIFY USER"):
-            st.toast("Updating User Portal...")
+    if m_price > 0:
+        # Founder Share logic (15%) [cite: 2026-05-08]
+        share = m_price * 0.15
+        total = m_price + share
+        st.info(f"{t['share']}: **${share:,.2f}**")
+        st.success(f"{t['total']}: **${total:,.2f}**")
 
-with tabs[2]:
-    st.write("### Financial Sovereignty")
-    st.warning("Police/Security 2% payment successfully REMOVED from all cycles.")
-    
-    col_met1, col_met2 = st.columns(2)
-    col_met1.metric("Current Revenue Share", "$45,200", "15%")
-    col_met2.metric("Total Jobs Completed", "1,204", "All 54 Countries")
-
-st.markdown("<br><p style='text-align: center; color: #555;'>Great Mech Engineering | Africa's Future Built Here</p>", unsafe_allow_html=True)
+with tab3:
+    st.subheader("Financial Hub")
+    st.write("2% Police Payment: **REMOVED** [cite: 2026-05-08]")
+    st.metric("Total Revenue Share", "$0.00", "15%")
 
