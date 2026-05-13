@@ -46,8 +46,6 @@ st.markdown("""
     .main-title { text-align: center; font-size: 42px; font-weight: 900; color: #D4AF37; margin-bottom: 30px; letter-spacing: 2px; }
     .card { background: #111; border: 1px solid #D4AF37; padding: 25px; border-radius: 12px; margin-bottom: 15px; }
     div[data-testid="stSidebar"] .stButton>button { background-color: #FF0000 !important; color: white !important; font-weight: bold; border-radius: 8px; width: 100%; }
-    .stTabs [data-baseweb="tab-list"] { gap: 30px; }
-    .stTabs [data-baseweb="tab"] { color: #D4AF37; font-weight: 600; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -56,9 +54,9 @@ def get_greeting(name):
     msg = "Good Morning" if hour < 12 else "Good Afternoon" if hour < 18 else "Good Evening"
     return f"{msg}, {name} 🌍"
 
-# --- 4. THE SOVEREIGN GATEWAY (LOGIN / REGISTRATION / STRICT OTP) ---
+# --- 4. THE SOVEREIGN GATEWAY (STRICT OTP VALIDATION) ---
 if st.session_state.auth_status == "gateway":
-    st.markdown("<div class='main-title'>GREAT MECH v96.0</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>GREAT MECH</div>", unsafe_allow_html=True)
     
     # FORGOT PIN / RECOVERY MODE
     if st.session_state.recovery_mode:
@@ -68,8 +66,8 @@ if st.session_state.auth_status == "gateway":
         if st.button("Send Priority Recovery OTP"):
             if f_email in st.session_state.db:
                 st.session_state.rec_otp = str(random.randint(1000, 9999))
-                st.info(f"Priority OTP Sent to {st.session_state.db[f_email]['phone']}. Waiting for network handshake...")
-            else: st.error("Email not recognized in the Sovereign Engine.")
+                st.info(f"Priority OTP Sent to {st.session_state.db[f_email]['phone']}. Waiting for network...")
+            else: st.error("Email not found.")
         
         if 'rec_otp' in st.session_state:
             otp_val = st.text_input("Enter 4-Digit Security Code", key="rec_otp_val")
@@ -94,7 +92,7 @@ if st.session_state.auth_status == "gateway":
                 if l_email in st.session_state.db and st.session_state.db[l_email]["pin"] == l_pin:
                     st.session_state.current_user = st.session_state.db[l_email]
                     st.session_state.auth_status = "verified"; st.rerun()
-                else: st.error("Authentication Failure. Check credentials.")
+                else: st.error("Authentication Failure.")
             if st.button("Forget PIN?"): st.session_state.recovery_mode = True; st.rerun()
 
         with tab_reg:
@@ -107,7 +105,7 @@ if st.session_state.auth_status == "gateway":
                 country_select = st.selectbox("Search Africa 🔍", list(AFRICA_54.keys()))
                 code = AFRICA_54[country_select]
             with col_phone:
-                r_num = st.text_input("Mobile Number (without country code)")
+                r_num = st.text_input("Mobile Number")
             
             full_phone = f"{code}{r_num}"
             r_pin = st.text_input("Create 4-Digit Security PIN", type="password")
@@ -115,65 +113,46 @@ if st.session_state.auth_status == "gateway":
             if st.button("Verify Registration"):
                 if r_name and "@" in r_email and r_num:
                     st.session_state.temp_otp = str(random.randint(1000, 9999))
-                    st.success(f"OTP Fast-Sent to {full_phone}. Bypass-DND engaged.")
-                else: st.error("Incomplete engineering credentials.")
+                    st.success(f"OTP Fast-Sent to {full_phone}. Check your SMS.")
+                else: st.error("Incomplete credentials.")
             
             if 'temp_otp' in st.session_state:
-                otp_in = st.text_input("Enter SMS OTP Code", placeholder="Check your phone...")
+                otp_in = st.text_input("Enter SMS OTP Code")
                 if st.button("Confirm & Activate Account"):
                     if otp_in == st.session_state.temp_otp: # STRICT CHECK
                         st.session_state.db[r_email] = {"name": r_name, "pin": r_pin, "sector": sec, "phone": full_phone}
-                        st.success("Sovereign Account Active. Proceed to Login."); del st.session_state.temp_otp
+                        st.success("Account Active. Proceed to Login."); del st.session_state.temp_otp
                     else: st.error("🚨 INCORRECT CODE. Registration Blocked.")
 
-# --- 5. TRI-SECTOR INTERFACES (POST-VERIFICATION) ---
+# --- 5. TRI-SECTOR INTERFACES ---
 elif st.session_state.auth_status == "verified":
     user = st.session_state.current_user
     
     with st.sidebar:
         st.markdown(f"### {user['sector']} Portal")
-        st.write(f"**Verified Engineer:** {user['name']}")
         st.divider()
-        if st.button("🚨 PANIC BUTTON"): # On-site emergency alert
-            st.error("EMERGENCY ALERT: Private Security Firm Notified. Coordinates Sent.")
-        if st.button("🚪 Log out of Engine"): 
+        if st.button("🚨 PANIC BUTTON"): #
+            st.error("EMERGENCY ALERT: Private Security Notified.")
+        if st.button("🚪 Log out"): 
             st.session_state.auth_status = "gateway"; st.rerun()
 
     st.markdown(f"<h2>{get_greeting(user['name'])}</h2>", unsafe_allow_html=True)
 
-    # USER APP: AI DIAGNOSIS & PAYMENT
+    # --- USER/MECH LOGIC (15% Founder Share + 0% Police Tax) ---
     if user['sector'] == "User":
-        if st.session_state.payment_confirmed:
-            st.success("✅ Payment Secured. Tracking Mechanic via GPS.")
-            st.map(pd.DataFrame([[6.4273, 3.4215]], columns=['lat', 'lon']))
-            if st.button("✅ JOB COMPLETED"): st.session_state.job_status = "completed"; st.balloons()
-        else:
-            cat = st.selectbox("Rendered Service Category", ["Truck", "Car", "Diesel Engine/Generator", "CCTV", "Solar"])
-            st.multiselect("7-Fault AI Diagnostic Input", ["Engine Malfunction", "Fluid Leak", "Power Surge", "Smoke Emission", "Braking System", "Overheating", "Vibration/Noise"])
-            if st.button("🚀 INITIATE AI DIAGNOSIS"):
-                st.session_state.active_request = {"cat": cat, "user": user['name'], "phone": user['phone']}
-                st.info("Broadcasted to regional Mech-Network.")
+        cat = st.selectbox("Service", ["Truck", "Car", "Diesel/Gen", "CCTV", "Solar"])
+        if st.button("🚀 INITIATE AI DIAGNOSIS"):
+            st.session_state.active_request = {"cat": cat, "user": user['name'], "phone": user['phone']}
+            st.info("Broadcasted to regional Mech-Network.")
 
-    # MECHANIC APP: NEGOTIATION & 15% FOUNDER SHARE
     elif user['sector'] == "Mechanic":
         if st.session_state.active_request:
-            req = st.session_state.active_request
-            st.markdown(f"<div class='card'><b>Job Request: {req['cat']}</b><br>Client: {req['user']}</div>", unsafe_allow_html=True)
             svc = st.number_input("Service Fee (₦)")
             tpt = st.number_input("Transport Fee (₦)")
             if st.button("SUBMIT QUOTE"):
-                # Maintains the 15% Founder Share
-                st.session_state.active_request["quote"] = (svc + tpt) * 1.15
-                st.success("Quote sent to client. (Includes 15% Platform Maintenance).")
-        
-        if st.session_state.job_status == "completed":
-            st.subheader("Financial Settlement")
-            acc = st.text_input("Enter Payout Account Number")
-            if st.button("VALIDATE & RELEASE FUNDS"): 
-                st.success("85% Professional Fee Released. Transaction Logged.")
+                st.session_state.active_request["quote"] = (svc + tpt) * 1.15 # 15% Share
+                st.success("Quote sent (Includes 15% Platform Maintenance).")
 
-    # FOUNDER APP: SUPREME CONTROL (v42.0 Engine)
-    elif user['sector'] == "Founder":
+    elif user['sector'] == "Founder": #
         st.subheader("Sovereign Master Ledger (v42.0 Core)")
-        st.write("Sovereign Commission: 15% | Police/Security Tax: 0% (REMOVED)")
-        st.write(f"Total Active Nodes: {len(st.session_state.db)}")
+        st.write("Sovereign Commission: 15% | Police/Security Tax: 0%")
