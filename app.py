@@ -6,7 +6,7 @@ import requests
 
 # --- 1. SOVEREIGN IDENTITY & LIVE KEYS ---
 # Hard-coded for this build to ensure the bank tunnel opens immediately
-LIVE_SECRET_KEY = "sk_live_5d70f03c20eea14b71be5b" 
+LIVE_SECRET_KEY = "sk_live_5d70f03c20eea14b71be5b116e453e6a6848eebe" 
 
 st.set_page_config(page_title="Great Mech | Sovereign Engine", page_icon="🌍", layout="wide")
 
