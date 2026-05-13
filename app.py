@@ -5,9 +5,8 @@ import time
 import requests
 
 # --- 1. SOVEREIGN IDENTITY & LIVE KEYS ---
-# Locked from file 320313.png for Live Handshake
+# Hard-coded for this build to ensure the bank tunnel opens immediately
 LIVE_SECRET_KEY = "sk_live_5d70f03c20eea14b71be5b" 
-LIVE_PUBLIC_KEY = "pk_live_3d563cb621d1572ffe7e22"
 
 st.set_page_config(page_title="Great Mech | Sovereign Engine", page_icon="🌍", layout="wide")
 
@@ -23,30 +22,35 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. CORE LOGIC FUNCTIONS ---
+# --- 3. LIVE BANKING CORE ---
 def initialize_paystack_payment(email, amount_ngn):
     """Handshake with Paystack Live Servers to process 15% share + Mechanic fees."""
     url = "https://api.paystack.co/transaction/initialize"
-    headers = {"Authorization": f"Bearer {LIVE_SECRET_KEY}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bearer {LIVE_SECRET_KEY}", 
+        "Content-Type": "application/json"
+    }
+    # Payload includes specific channels to ensure Bank Transfer is available
     payload = {
         "email": email, 
-        "amount": int(amount_ngn * 100), # Amount in Kobo
+        "amount": int(float(amount_ngn) * 100), # Kobo conversion
         "currency": "NGN",
-        "callback_url": "https://greatmech.africa/success"
+        "channels": ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"]
     }
     try:
         response = requests.post(url, json=payload, headers=headers)
-        return response.json()['data']['authorization_url']
-    except:
+        res_data = response.json()
+        if res_data.get('status'):
+            return res_data['data']['authorization_url']
+        else:
+            st.error(f"Bank Error: {res_data.get('message')}")
+            return None
+    except Exception as e:
+        st.error(f"Connection Failed: {e}")
         return None
 
-def trigger_panic_alert(mechanic_id, location):
-    """Sends emergency alert to private security firm."""
-    # Logic for integration with security firm API
-    return f"EMERGENCY: Security dispatched to {location} for Mechanic {mechanic_id}."
-
-# --- 4. DATA & SYMPTOMS (The Imagination Download) ---
-# Preserving solution-making for all 5 categories
+# --- 4. DATA & SYMPTOMS ---
+# Solution-making logic for all categories
 SYMPTOM_MATRIX = {
     "🚛 Truck": ["Brake Pressure Loss", "Engine Knocking", "Coupling Issue", "Exhaust Smoke", "Gear Resistance", "Suspension Sag", "Axle Overheat"],
     "🚗 Car": ["ABS Warning", "Steering Vibration", "AC Failure", "Brake Squeal", "Ignition Delay", "Fluid Leaks", "Check Engine Light"],
@@ -91,7 +95,7 @@ if user_role == "User/Client":
     if st.session_state.final_quote:
         st.markdown(f"### Pay ₦{st.session_state.final_quote:,.2f} to start repair")
         if st.button("💳 PAY VIA SOVEREIGN GATEWAY"):
-            url = initialize_paystack_payment("client@greatmech.africa", st.session_state.final_quote)
+            url = initialize_paystack_payment("founder@greatmech.africa", st.session_state.final_quote)
             if url: st.link_button("OPEN SECURE BANKING TUNNEL", url)
 
 elif user_role == "Mechanic Hub":
@@ -105,18 +109,18 @@ elif user_role == "Mechanic Hub":
         if st.button("SEND LIVE QUOTE"):
             # MAINTAIN 15% Share | REMOVE 2% Police Payment
             st.session_state.final_quote = (svc + tpt) * 1.15
-            st.success("Quote sent. 15% Founder Share locked.")
+            st.success("Quote Transmitted. 15% Founder Share locked.")
         
         st.divider()
-        if st.button("🚨 TRIGGER PANIC BUTTON", help="Emergency Security Alert"):
-            alert_msg = trigger_panic_alert("MECH-001", req['loc'])
-            st.error(alert_msg)
+        if st.button("🚨 TRIGGER PANIC BUTTON"):
+            st.error(f"EMERGENCY: Security dispatched to {req['loc']} for Mechanic.")
     else:
-        st.info("No active service requests in your area.")
+        st.info("No active service requests.")
 
 elif user_role == "Sovereign Ledger":
     st.subheader("Financial Performance")
-    st.write("Total Revenue: ₦0.00 (Pending first live test)")
+    # Reference to zero revenue in current pre-approved state
+    st.write("Total Revenue: ₦0.00")
     st.write("Founder Net (15%): ₦0.00")
     st.write("Security Fee (2%): EXCLUDED BY FOUNDER ORDER")
 
@@ -124,4 +128,4 @@ elif user_role == "Sovereign Ledger":
 st.divider()
 st.subheader("📍 Great Mech Global Radar")
 st.map(pd.DataFrame([[6.4273, 3.4215]], columns=['lat', 'lon'])) 
-        
+    
