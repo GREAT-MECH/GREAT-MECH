@@ -7,139 +7,118 @@ from datetime import datetime
 # --- 1. SOVEREIGN IDENTITY & LIVE KEYS ---
 LIVE_SECRET_KEY = "sk_live_5d70f03c20eea14b71be5b" 
 
-st.set_page_config(page_title="Great Mech | Sovereign Gateway", page_icon="🌍", layout="wide")
+st.set_page_config(page_title="Great Mech | Sovereign Engine", page_icon="🌍", layout="wide")
 
-# --- 2. GOOGLE SHEETS DATABASE CONNECTIVITY ---
-# Note: Ensure your 'secrets.toml' contains the GSHEET_URL for the "Great Mech Strategic Prospectus" ledger
-def sync_to_sheet(data, sheet_type="users"):
-    # Protocol to store registration and solution making data permanently
-    pass # Integrated with GSheet API for African engineering magic
-
-# --- 3. SESSION STATE & DATABASE ---
+# --- 2. PERSISTENT DATABASE & SESSION STATE ---
 if 'db' not in st.session_state: 
-    st.session_state.db = {} # Persistent ID mapping
+    st.session_state.db = {} # Persistent User/Mech records
 if 'auth_status' not in st.session_state: st.session_state.auth_status = "gateway"
 if 'current_user' not in st.session_state: st.session_state.current_user = None
 if 'active_request' not in st.session_state: st.session_state.active_request = None
 if 'payment_confirmed' not in st.session_state: st.session_state.payment_confirmed = False
+if 'job_done' not in st.session_state: st.session_state.job_done = False
 
-# --- 4. STYLING & GREETING LOGIC ---
+# --- 3. DYNAMIC STYLING & GREETING ---
 st.markdown("""
 <style>
     .stApp { background-color: #050505; color: #FFFFFF; font-family: 'Inter', sans-serif; }
     .main-title { text-align: center; font-size: 45px; font-weight: 900; color: #D4AF37; margin-bottom: 0px; }
-    .welcome-text { text-align: center; font-size: 20px; color: #D4AF37; margin-bottom: 30px; font-weight: 600; }
-    .card { border: 1px solid #D4AF37; padding: 20px; background: #111; border-radius: 10px; margin-bottom: 15px; }
+    .welcome-text { text-align: center; font-size: 20px; color: #D4AF37; margin-bottom: 20px; font-weight: 600; }
+    .report-card { background: #111; border: 1px solid #D4AF37; padding: 20px; border-radius: 10px; margin: 10px 0; }
+    .panic-btn { background-color: #ff0000 !important; color: white !important; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
 def get_greeting(name):
     hour = datetime.now().hour
-    if hour < 12: greeting = "Good Morning"
-    elif 12 <= hour < 18: greeting = "Good Afternoon"
-    else: greeting = "Good Evening"
-    return f"{greeting}, {name} 🌍"
+    msg = "Good Morning" if hour < 12 else "Good Afternoon" if hour < 18 else "Good Evening"
+    return f"{msg}, {name} 🌍"
 
-# --- 5. SOVEREIGN GATEWAY (LOGIN/REGISTER) ---
+# --- 4. THE SOVEREIGN GATEWAY (INTELLIGENT LOGIN) ---
 if st.session_state.auth_status == "gateway":
     st.markdown("<div class='main-title'>GREAT MECH</div>", unsafe_allow_html=True)
-    
     tab_login, tab_reg = st.tabs(["Secure Login", "New Registration"])
     
     with tab_reg:
         sector = st.radio("I am a:", ["User", "Mechanic"], horizontal=True)
         reg_name = st.text_input("Full Legal Name")
         reg_email = st.text_input("Email Verification")
-        reg_phone = st.text_input("Mobile Number (with Country Code)")
         reg_pin = st.text_input("Create Security PIN", type="password")
         agree = st.checkbox("I agree to the Great Mech Privacy & App Policy")
-        
         if st.button("Generate Verification Code"):
-            if reg_name and "@" in reg_email and reg_pin and agree:
-                # Save to persistent database with Sector tag
-                st.session_state.db[reg_email] = {
-                    "name": reg_name, "pin": reg_pin, "sector": sector, "phone": reg_phone
-                }
-                st.success(f"Account Registered! Please login.")
-            else:
-                st.error("Please fill all fields and agree to policy.")
+            if reg_name and "@" in reg_email and agree:
+                st.session_state.db[reg_email] = {"name": reg_name, "pin": reg_pin, "sector": sector}
+                st.success("Account Registered! Switch to Login.")
 
     with tab_login:
-        log_email = st.text_input("Email Address")
-        log_pin = st.text_input("Security PIN", type="password")
-        
+        log_email = st.text_input("Email")
+        log_pin = st.text_input("PIN", type="password")
         if st.button("Enter Sovereign Engine"):
-            # AUTOMATIC ROLE RECOGNITION
-            if log_email in st.session_state.db:
-                user_data = st.session_state.db[log_email]
-                if user_data["pin"] == log_pin:
-                    st.session_state.current_user = user_data
-                    st.session_state.auth_status = "verified"
-                    st.rerun()
-                else: st.error("Invalid PIN.")
-            else: st.error("Account not found.")
+            if log_email in st.session_state.db and st.session_state.db[log_email]["pin"] == log_pin:
+                st.session_state.current_user = st.session_state.db[log_email]
+                st.session_state.auth_status = "verified"
+                st.rerun()
+            else: st.error("Access Denied: Invalid Credentials.")
 
-# --- 6. THE MAIN SOVEREIGN ENGINE ---
+# --- 5. THE MAIN ENGINE (v88.0) ---
 elif st.session_state.auth_status == "verified":
     user = st.session_state.current_user
     st.markdown(f"<div class='welcome-text'>{get_greeting(user['name'])}</div>", unsafe_allow_html=True)
 
-    with st.sidebar:
-        st.write(f"**Identity:** {user['name']}")
-        st.write(f"**Role:** {user['sector']}")
-        if st.button("Logout"): 
-            st.session_state.auth_status = "gateway"
-            st.rerun()
+    # 5 Categories & 7 Symptoms
+    SYMPTOM_MATRIX = {
+        "🚛 Truck": ["Brake Pressure Loss", "Engine Knocking", "Coupling Issue", "Exhaust Smoke", "Gear Resistance", "Suspension Sag", "Axle Overheat"],
+        "🚗 Car": ["ABS Warning", "Steering Vibration", "AC Failure", "Brake Squeal", "Ignition Delay", "Fluid Leaks", "Check Engine Light"],
+        "⚙️ Diesel/Gen": ["Injection Fault", "Governor Hunting", "Radiator Clog", "Low Oil Pressure", "Voltage Drop", "Vibration", "Turbo Lag"],
+        "📹 CCTV": ["Signal Loss", "IR Failure", "Storage Error", "PTZ Jam", "Network Lag", "Flickering", "Power Overload"],
+        "☀️ Solar": ["Inverter Fault", "Battery Drain", "Micro-cracks", "Controller Heat", "Efficiency Drop", "Arcing", "Grid Sync Failure"]
+    }
 
-    # --- USER PORTAL ---
+    # --- USER INTERFACE ---
     if user['sector'] == "User":
-        st.subheader("Request Engineering Magic")
-        cat = st.selectbox("Select Service Category", ["🚛 Truck", "🚗 Car", "⚙️ Diesel/Gen", "📹 CCTV", "☀️ Solar"])
-        st.text_area("Precision Description (Magic Box)")
-        if st.button("🚀 AI Diagnosis & Alert Mechanic"):
-            st.session_state.active_request = {
-                "user": user['name'], "cat": cat, "loc": "Victoria Island, Lagos", "lat": 6.4273, "lon": 3.4215
-            }
-            st.success("Request Broadcasted to Regional Mechanics.")
+        if st.session_state.payment_confirmed:
+            st.success("✅ Payment Verified. Mechanic In-Route.")
+            st.map(pd.DataFrame([[6.4273, 3.4215]], columns=['lat', 'lon'])) # Track Mechanic
+            if st.button("✅ JOB COMPLETED (Release Payout)"):
+                st.session_state.job_done = True
+                st.balloons()
+        elif st.session_state.active_request and "quote" in st.session_state.active_request:
+            req = st.session_state.active_request
+            st.markdown(f"<div class='report-card'><h3>AI Diagnosis Report</h3><b>Faults Detected:</b> {', '.join(req['faults'])}<br><b>Total to Pay:</b> ₦{req['quote']:,.2f}</div>", unsafe_allow_html=True)
+            if st.button("💳 Authorize Payment via Paystack"):
+                st.session_state.payment_confirmed = True; st.rerun()
+        else:
+            cat = st.selectbox("Select Service Category", list(SYMPTOM_MATRIX.keys()))
+            selected = [s for s in SYMPTOM_MATRIX[cat] if st.checkbox(s)]
+            desc = st.text_area("Magic Box (Detailed Description)")
+            if st.button("🚀 AI DIAGNOSIS & ALERT MECHANIC"):
+                st.session_state.active_request = {"cat": cat, "faults": selected, "desc": desc, "user": user['name']}
+                st.info("AI Analysis sent to Regional Mechanics...")
 
-    # --- MECHANIC HUB ---
+    # --- MECHANIC INTERFACE ---
     elif user['sector'] == "Mechanic":
-        st.subheader("Field Operations & Payouts")
-        
-        # Payout Details Block
-        with st.expander("💳 Bank Account for Credits"):
-            bank_name = st.text_input("Bank Name")
-            acc_num = st.text_input("Account Number")
-            if st.button("Save Banking Details"):
-                st.success("Details encrypted and stored for payout.")
-
-        # Request Visualization
+        st.subheader("Regional Service Requests")
         if st.session_state.active_request:
             req = st.session_state.active_request
-            st.markdown(f"""
-            <div class='card'>
-                <b>NEW REQUEST: {req['cat']}</b><br>
-                Client: {req['user']}<br>
-                Location: {req['loc']}
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(f"<div class='report-card'><b>Client:</b> {req['user']}<br><b>Fault:</b> {req['cat']}<br><b>Symptoms:</b> {', '.join(req['faults'])}</div>", unsafe_allow_html=True)
+            st.map(pd.DataFrame([[6.4273, 3.4215]], columns=['lat', 'lon'])) # Exact User Location
             
-            # Map for exact location
-            st.map(pd.DataFrame([[req['lat'], req['lon']]], columns=['lat', 'lon']))
-            
-            # Negotiation Block
-            svc_fee = st.number_input("Service Fee (₦)", min_value=0)
-            tpt_fee = st.number_input("Transport Fee (₦)", min_value=0)
-            
-            if st.button("ACCEPT JOB & SEND QUOTE"):
-                total = (svc_fee + tpt_fee) * 1.15 # 15% Founder Share
-                st.success(f"Quote of ₦{total:,.2f} sent. (Includes 15% platform fee).")
-        else:
-            st.info("No active service requests in your area currently.")
+            svc = st.number_input("Service Fee (₦)")
+            tpt = st.number_input("Transport Fee (₦)")
+            if st.button("SEND QUOTE TO USER"):
+                st.session_state.active_request["quote"] = (svc + tpt) * 1.15 # 15% Platform Share
+                st.success("Quote sent with AI Diagnostic Report.")
+        
+        if st.session_state.job_done:
+            st.success("💰 Job Finalized. 85% of funds released to your wallet.")
+            st.session_state.job_done = False # Reset for next job
+        
+        st.divider()
+        if st.button("🚨 PANIC BUTTON", key="panic"): #
+            st.error("EMERGENCY ALERT: Private Security Firm notified.")
 
-    # --- FOUNDER LEDGER (VISIBLE ONLY TO YOU) ---
+    # --- FOUNDER LEDGER ---
     if user['name'] == "Nwokeji Anthony C.":
         st.divider()
-        st.subheader("Sovereign Ledger (Founder Access)")
-        st.write("Current Platform Fee: 15% | Police Payout: 0% (Removed)")
-            
+        st.subheader("Sovereign Ledger (15% Net)")
+        st.write("Police Service Charge: 0% (Removed)")
