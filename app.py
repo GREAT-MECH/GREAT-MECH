@@ -1,78 +1,119 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import random
 import time
 
-# --- 1. CORE IDENTITY & CONFIG ---
-st.set_page_config(page_title="Great Mech v71", page_icon="🛠️", layout="wide")
+# --- 1. PRESTIGE INTERFACE CONFIG ---
+st.set_page_config(page_title="Great Mech | Sovereign Engine", page_icon="🌍", layout="wide")
 
+# Custom CSS for Black & Gold Aesthetic
+st.markdown("""
+    <style>
+    .stApp { background-color: #0E1117; color: #FFFFFF; }
+    h1, h2, h3 { color: #D4AF37 !important; font-family: 'Trebuchet MS'; }
+    .stButton>button { 
+        background-color: #D4AF37; color: black; border-radius: 10px; 
+        font-weight: bold; border: none; width: 100%;
+    }
+    .stTextInput>div>div>input { background-color: #1A1C24; color: gold; }
+    .stTabs [data-baseweb="tab-list"] { gap: 20px; }
+    .stTabs [data-baseweb="tab"] { 
+        color: white; border-bottom: 2px solid transparent; 
+    }
+    .stTabs [data-baseweb="tab"]:hover { color: #D4AF37; }
+    .stTabs [aria-selected="true"] { color: #D4AF37 !important; border-bottom: 2px solid #D4AF37 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 2. SOVEREIGN MEMORY & RECOVERY ---
 if 'db' not in st.session_state:
-    st.session_state.db = {"founder@greatmech.com": {"name": "Anthony", "pin": "7777", "sector": "Founder"}}
+    # Founder credentials preserved
+    st.session_state.db = {
+        "founder@greatmech.com": {"name": "Founder", "pin": "7777", "sector": "Founder", "phone": "+2348139664997"}
+    }
 
-if 'auth_status' not in st.session_state:
-    st.session_state.auth_status = "gateway"
+for key in ['auth_status', 'user_data', 'temp_otp']:
+    if key not in st.session_state:
+        st.session_state[key] = "gateway" if key == 'auth_status' else None
 
-# --- 2. SOVEREIGN GATEWAY (DEBUG ACTIVATED) ---
+# --- 3. THE SOVEREIGN GATEWAY (LOGIN & REGISTRATION) ---
 if st.session_state.auth_status == "gateway":
-    st.title("🌍 Great Mech Sovereign Engine")
-    st.info("Sovereign Debug Mode: Bypassing restricted SMS gateway for local testing.")
+    st.markdown("<h1 style='text-align:center;'>🌍 GREAT MECH SOVEREIGN ENGINE</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:gray;'>Engineering Africa's Future | v101.0 Master Build</p>", unsafe_allow_html=True)
     
-    tab_reg, tab_login = st.tabs(["🛠️ Registration", "🔒 Login"])
-    
+    tab_login, tab_reg = st.tabs(["🔒 Secure Login", "🛠️ Account Registration"])
+
+    with tab_login:
+        st.markdown("### Access Portal")
+        l_email = st.text_input("Registered Email", key="login_email")
+        l_pin = st.text_input("4-Digit Security PIN", type="password", key="login_pin")
+        if st.button("EXECUTE LOGIN"):
+            if l_email in st.session_state.db and st.session_state.db[l_email]['pin'] == l_pin:
+                st.session_state.user_data = st.session_state.db[l_email]
+                st.session_state.auth_status = "verified"
+                st.rerun()
+            else:
+                st.error("Access Denied: Invalid Credentials.")
+
     with tab_reg:
-        r_name = st.text_input("Full Name")
-        r_email = st.text_input("Email")
-        r_phone = st.text_input("Phone (e.g. +234...)")
-        if st.button("Generate Sovereign OTP"):
-            st.session_state.temp_otp = str(random.randint(1000, 9999))
-            # In Debug, we show the code directly since the SMS is blocked in 321487.png
-            st.warning(f"Your Security Code is: {st.session_state.temp_otp}")
-            
-        if 'temp_otp' in st.session_state:
-            otp_in = st.text_input("Enter Code")
-            if st.button("Activate Account"):
-                if otp_in == st.session_state.temp_otp:
-                    st.session_state.db[r_email] = {"name": r_name, "sector": "User"}
-                    st.success("Account Active! Please switch to Login tab.")
-                else: st.error("Invalid Code.")
+        st.markdown("### Join the Sovereign Network")
+        r_name = st.text_input("Full Name / Business Name")
+        r_email = st.text_input("Email Address")
+        r_phone = st.text_input("Phone Number (include +234, etc.)")
+        r_pin = st.text_input("Create 4-Digit Security PIN", type="password", max_chars=4)
+        r_sector = st.selectbox("Category", ["User", "Mechanic (Truck/Car/Gen/Solar/CCTV)"])
 
-# --- 3. THE NEXT LEVEL: GPS TRACKING MAP ---
-elif st.session_status == "verified" or st.session_state.auth_status == "verified":
-    st.title("📍 Real-Time Engineering Magic")
-    
-    # 15% Maintenance Logic
-    st.sidebar.markdown("### Sovereign Ledger")
-    st.sidebar.write("Founder Commission: 15%")
-    st.sidebar.write("Police/Security Tax: 0%")
-    
-    # Panic Button for Mechanics
-    if st.sidebar.button("🚨 PANIC BUTTON"):
-        st.sidebar.error("EMERGENCY ALERT SENT TO PRIVATE SECURITY.")
+        if st.button("GENERATE SECURITY OTP"):
+            if r_phone and r_email:
+                st.session_state.temp_otp = str(random.randint(1000, 9999))
+                # Debugging bypass due to country restriction
+                st.info(f"Sovereign OTP Generated: {st.session_state.temp_otp}")
+            else:
+                st.error("Please provide valid contact details.")
 
-    # GPS SIMULATION (Lagos Coordinates)
-    # We create a map showing the Mechanic moving toward the User
-    st.subheader("Mechanic Tracking")
+        if st.session_state.temp_otp:
+            otp_check = st.text_input("Enter the 4-Digit Code", key="otp_verify")
+            if st.button("ACTIVATE SOVEREIGN ACCOUNT"):
+                if otp_check == st.session_state.temp_otp:
+                    st.session_state.db[r_email] = {"name": r_name, "pin": r_pin, "sector": r_sector, "phone": r_phone}
+                    st.success("Verification Successful. Proceed to Login.")
+                    st.session_state.temp_otp = None
+                else:
+                    st.error("Invalid Code. Verification Failed.")
+
+# --- 4. THE LIVE PORTAL (GPS & LEDGER) ---
+elif st.session_state.auth_status == "verified":
+    user = st.session_state.user_data
     
-    # Initial location (Lagos Mainland)
-    base_lat, base_lon = 6.5244, 3.3792 
+    with st.sidebar:
+        st.markdown(f"## Welcome, {user['name']}")
+        st.write(f"**Sector:** {user['sector']}")
+        st.divider()
+        # Panic Button Directive
+        if st.button("🚨 PANIC BUTTON (EMERGENCY)"):
+            st.error("POLICE BYPASSED: Alert sent to Private Security Firm.")
+        if st.button("🚪 Logout"):
+            st.session_state.auth_status = "gateway"; st.rerun()
+
+    st.markdown("### 📍 Real-Time Mechanic Tracking Map")
     
-    # Create tracking data
-    map_data = pd.DataFrame({
-        'lat': [base_lat, base_lat + 0.005],
-        'lon': [base_lon, base_lon + 0.005],
-        'name': ['Your Location', 'Mechanic (En Route)']
+    # 54 Africa Logic: 15% Platform Share, 0% Security Tax
+    with st.expander("Sovereign Ledger Details"):
+        st.write("Platform Maintenance Fee: **15%**")
+        st.write("Regional Security/Police Charge: **0% (Removed)**")
+
+    # GPS Simulation: Tracking Mechanic movement
+    view_data = pd.DataFrame({
+        'lat': [6.5244, 6.5300], 
+        'lon': [3.3792, 3.3900],
+        'color': ['#D4AF37', '#FF0000']
     })
-
-    st.map(map_data)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Estimated Arrival", "14 Mins")
-    with col2:
-        st.metric("Platform Fee (15%)", "₦2,400")
-
-    if st.button("Confirm Mechanic Arrival"):
+    st.map(view_data)
+    
+    st.metric(label="Mechanic Estimated Arrival", value="11 Mins", delta="-2 Mins")
+    
+    if st.button("Confirm Service Completion"):
         st.balloons()
-        st.success("Service started. Moving Africa to the next level.")
+        st.success("Transaction Complete. 15% Founders Share Logged.")
         
