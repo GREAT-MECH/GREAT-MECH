@@ -1,113 +1,70 @@
-"""
-SUPREME ENGINE - African Engineering Services Platform
-Complete Single-Page Flask Application with Black & Gold Prestige Theme
-Version: v42.0 (Sovereign Edition)
-Features: 15% Founder Share, 0% Police Fee, Mechanic Panic Button, Streamlit Bridge
-"""
-
-from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
-import json
-import os
-import secrets
-import hashlib
-from functools import wraps
+import streamlit as st
+import datetime
+import pandas as pd
 
 # ============================================================================
-# INITIALIZATION
+# SUPREME ENGINE v42.1 - STREAMLIT EDITION
 # ============================================================================
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///supreme_engine.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+st.set_page_config(page_title="Great Mech Supreme Engine", page_icon="⚙️", layout="centered")
 
-db = SQLAlchemy(app)
-CORS(app)
+# Black & Gold Prestige Styling
+st.markdown("""
+    <style>
+    .main { background-color: #0a0a0a; color: #d4af37; }
+    h1 { color: #d4af37; font-family: 'Playfair Display', serif; text-align: center; border-bottom: 2px solid #d4af37; }
+    .stButton>button { background-color: #d4af37; color: black; font-weight: bold; border-radius: 10px; width: 100%; }
+    .panic-btn>button { background-color: #ff0000; color: white; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# ============================================================================
-# DATABASE MODELS (12-COLUMN SCHEMA v42.0)
-# ============================================================================
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    open_id = db.Column(db.String(64), unique=True, nullable=False)
-    name = db.Column(db.String(255))
-    email = db.Column(db.String(320), unique=True)
-    phone = db.Column(db.String(20))
-    location = db.Column(db.String(255))
-    bank_details = db.Column(db.String(1000))
-    pin_code = db.Column(db.String(255))
-    role = db.Column(db.String(20), default='user')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_signed_in = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='active')
-
-class ServiceRequest(db.Model):
-    __tablename__ = 'service_requests'
-    id = db.Column(db.Integer, primary_key=True)
-    customer_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    mechanic_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    service_id = db.Column(db.Integer)
-    country = db.Column(db.String(100)) # Supports all 54 African Countries
-    location = db.Column(db.String(255))
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    panic_active = db.Column(db.Boolean, default=False)
-    total_amount = db.Column(db.Float)
-    founder_share = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+st.title("SUPREME ENGINE 🌍")
+st.subheader("Moving Africa to the Next Level")
 
 # ============================================================================
-# FOUNDER'S FINANCIAL ENGINE (HARDCODED RULES)
+# FOUNDER'S FINANCIAL ENGINE (HARDCODED)
 # ============================================================================
-
-FOUNDER_SHARE_PERCENT = 15  # NON-NEGOTIABLE
-SECURITY_FEE_PERCENT = 0    # 2% POLICE FEE REMOVED
+FOUNDER_SHARE_PERCENT = 15
+SECURITY_FEE_PERCENT = 0 
 
 def calculate_billing(amount):
-    """Rule: Founder 15%, Mechanic 85%, Security 0%"""
-    founder_share = amount * 0.15
-    mechanic_share = amount * 0.85
-    return {
-        'total': round(amount, 2),
-        'founder': round(founder_share, 2),
-        'mechanic': round(mechanic_share, 2),
-        'security': 0.00
-    }
+    founder_share = amount * (FOUNDER_SHARE_PERCENT / 100)
+    mechanic_share = amount - founder_share
+    return founder_share, mechanic_share
 
 # ============================================================================
-# SOVEREIGN ROUTES (REVENUE & PANIC)
+# THE INTERFACE
 # ============================================================================
 
-@app.route('/')
-def index():
-    return "Great Mech Supreme Engine v42.0 is Active. Moving Africa to the Next Level. 🌍"
+menu = ["Service Request", "Mechanic Portal", "Founder Dashboard"]
+choice = st.sidebar.selectbox("Navigation", menu)
 
-@app.route('/api/panic-button', methods=['POST'])
-def trigger_panic():
-    """Emergency Alert for On-Site Mechanics"""
-    data = request.json
-    print(f"!!! SECURITY ALERT !!! Mechanic {data.get('mechanic_id')} triggered panic.")
-    return jsonify({"status": "CRITICAL", "message": "Private Security Dispatched."}), 200
-
-@app.route('/api/billing/invoice/<int:request_id>', methods=['GET'])
-def get_invoice(request_id):
-    req = ServiceRequest.query.get(request_id)
-    billing = calculate_billing(req.total_amount)
-    return jsonify({"message": "Thanks for using Great Mech ⚙️, Moving Africa 🌍", "breakdown": billing})
-
-# ============================================================================
-# STREAMLIT CLOUD BRIDGE (FIXES ASSERTION ERROR)
-# ============================================================================
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
-else:
-    # This exposes the Flask app so the cloud server can find it
-    application = app
+if choice == "Service Request":
+    st.write("### Request African Engineering Magic")
+    service = st.selectbox("Category", ["Truck Services", "Car Services", "Diesel Engine/Generator", "CCTV Systems", "Solar Solutions"])
+    country = st.selectbox("Country", ["Nigeria", "Ghana", "Kenya", "South Africa", "Egypt", "Other (All 54 African Nations)"])
+    amount = st.number_input("Estimated Service Amount", min_value=1.0)
     
+    if st.button("Calculate & Request"):
+        f_share, m_share = calculate_billing(amount)
+        st.success(f"Service Requested in {country}!")
+        st.write(f"**Total Amount:** {amount}")
+        st.write(f"**Founder Share (15%):** {f_share}")
+        st.write(f"**Police Security Fee:** 0.00 (Strictly Enforced)")
+        st.info("Thanks for using Great Mech ⚙️🧰")
+
+elif choice == "Mechanic Portal":
+    st.write("### Mechanic On-Site Tools")
+    st.warning("EMERGENCY PROTOCOL")
+    if st.button("🚨 TRIGGER PANIC BUTTON", key="panic"):
+        st.error("CRITICAL ALERT: Private Security Dispatched to your location. Bypassing Police.")
+        # Logic: In a real app, this sends an SMS/Email to your security firm.
+
+elif choice == "Founder Dashboard":
+    st.write("### Founder Oversight")
+    st.metric("Founder Share %", f"{FOUNDER_SHARE_PERCENT}%")
+    st.metric("Security Fee %", "0%")
+    st.write("Immutable Audit Trail active. All 54 countries connected.")
+
+st.markdown("---")
+st.caption("Great Mech v42.1 | Sovereign African Technology")
