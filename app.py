@@ -1,9 +1,8 @@
-
 """
 SUPREME ENGINE - African Engineering Services Platform
 Complete Single-Page Flask Application with Black & Gold Prestige Theme
 Version: v42.0 (Sovereign Edition)
-Features: 15% Founder Share, 0% Police Fee, Mechanic Panic Button
+Features: 15% Founder Share, 0% Police Fee, Mechanic Panic Button, Streamlit Bridge
 """
 
 from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for
@@ -46,7 +45,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default='user')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_signed_in = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='active') # Column 12
+    status = db.Column(db.String(20), default='active')
 
 class ServiceRequest(db.Model):
     __tablename__ = 'service_requests'
@@ -58,7 +57,7 @@ class ServiceRequest(db.Model):
     location = db.Column(db.String(255))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    panic_active = db.Column(db.Boolean, default=False) # PANIC BUTTON STATUS
+    panic_active = db.Column(db.Boolean, default=False)
     total_amount = db.Column(db.Float)
     founder_share = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -85,30 +84,30 @@ def calculate_billing(amount):
 # SOVEREIGN ROUTES (REVENUE & PANIC)
 # ============================================================================
 
+@app.route('/')
+def index():
+    return "Great Mech Supreme Engine v42.0 is Active. Moving Africa to the Next Level. 🌍"
+
 @app.route('/api/panic-button', methods=['POST'])
 def trigger_panic():
-    """The Emergency Alert Logic for On-Site Mechanics"""
+    """Emergency Alert for On-Site Mechanics"""
     data = request.json
-    mechanic_id = data.get('mechanic_id')
-    location = data.get('location')
-    
-    # Logic: Sends alert to Private Security Firm, bypassing police
-    print(f"!!! SECURITY ALERT !!! Mechanic {mechanic_id} triggered panic in {location}")
-    
-    return jsonify({
-        "status": "CRITICAL",
-        "message": "Private Security Dispatched to your coordinates.",
-        "support_line": "Great Mech Emergency Command"
-    }), 200
+    print(f"!!! SECURITY ALERT !!! Mechanic {data.get('mechanic_id')} triggered panic.")
+    return jsonify({"status": "CRITICAL", "message": "Private Security Dispatched."}), 200
 
 @app.route('/api/billing/invoice/<int:request_id>', methods=['GET'])
 def get_invoice(request_id):
     req = ServiceRequest.query.get(request_id)
     billing = calculate_billing(req.total_amount)
-    
-    return jsonify({
-        "message": "Thanks for using Great Mech ⚙️🧰, Moving Africa 🌍 to the next level",
-        "breakdown": billing
-    })
+    return jsonify({"message": "Thanks for using Great Mech ⚙️, Moving Africa 🌍", "breakdown": billing})
 
-# (HTML TEMPLATE & OTHER ROUTES REMAIN AS PREVIOUSLY DEFINED)
+# ============================================================================
+# STREAMLIT CLOUD BRIDGE (FIXES ASSERTION ERROR)
+# ============================================================================
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
+else:
+    # This exposes the Flask app so the cloud server can find it
+    application = app
+    
